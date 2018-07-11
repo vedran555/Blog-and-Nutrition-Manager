@@ -1,0 +1,49 @@
+<div *ngIf="screenService.isLarge()" class="navb">
+  <div class="navb-left">
+    <div class="logo" [routerLink]="['/home']">
+      MEAN Stack App
+    </div>
+    <div class="home" [routerLink]="['/home']" [ngClass]="{'router-link-active': isActive}">
+      Home
+    </div>
+  </div>
+
+  <div class="navb-right">
+    <ul>
+      <li *ngFor="let item of configService.navbarItems">
+        <app-navbar-item [item]="item"></app-navbar-item>
+      </li>
+      <li *ngIf="this.authService.loggedIn()" id="logout" (click)="onLogout()">Logout</li>
+    </ul>
+  </div>
+</div>
+
+
+<!-- small menu -->
+
+<div *ngIf="!screenService.isLarge()" class="small">
+  <div class="small-navb">
+    <div class="hamburger">
+      <span class="glyphicon glyphicon-menu-hamburger icon" (click)="configService.showMenu=!configService.showMenu"
+      [ngClass]="{'menu-shown': configService.showMenu}"></span>
+    </div>
+
+    <div class="logo-small">
+      <span class="logo-small-span"  [routerLink]="['/home']">MEAN Stack App</span>
+    </div>
+
+    <div class="home-small">
+      <span class="glyphicon glyphicon-home icon" [ngClass]="{'router-link-active': isActive}"
+      [routerLink]="['/home']" ></span>
+    </div>
+  </div>
+
+  <div *ngIf="configService.showMenu" class="small-menu">
+      <div *ngFor="let item of configService.navbarItems" class="small-item" (click)="configService.showMenu=false">
+        <app-navbar-item [item]="item"></app-navbar-item>
+      </div>
+      <div *ngIf="this.authService.loggedIn()" class="logout-item" (click)="onLogout(); configService.showMenu=false;">
+        Logout
+      </div>
+  </div>
+</div>

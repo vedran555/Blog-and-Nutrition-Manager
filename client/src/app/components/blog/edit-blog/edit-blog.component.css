@@ -1,0 +1,11 @@
+.left {
+    float: right;
+}
+
+.blog-not-found {
+    height: 50px;
+    line-height: 50px;
+    padding-left: 10px;
+    background-color: rgb(240, 71, 71);
+    border-radius: 5px;
+}

@@ -1,0 +1,29 @@
+<div class="container">
+  <h2 class="page-header">Edit Blog</h2>
+  <form (ngSubmit)="onSaveChanges()" *ngIf="blog">
+
+    <div class="form-group">
+      <label class="center-block">Edit title:</label>
+      <input [disabled]="processing" class="form-control" name="title" [(ngModel)]="blog.title">
+    </div>
+
+    <div class="form-group">
+      <label class="center-block">Edit Body:</label>
+      <textarea [disabled]="processing" class="form-control" rows="8" cols="80" name="blog" [(ngModel)]="blog.body"></textarea>
+    </div>
+
+    <a [routerLink]="['/delete-blog/', blog._id]"><button [disabled]="processing" type="button" class="btn btn-danger left">Delete</button></a>
+    <a (click)="goBack()"><button [style.margin-right.px]="5" [disabled]="processing" class="btn btn-default left">Back</button></a>
+    <a><button [disabled]="processing" type="submit" class="btn btn-success">Save Changes</button></a>
+
+  </form>
+
+  <div class="blog-not-found" *ngIf="!blogFound">
+    Unable to edit blog
+  </div>
+  <a (click)="goBack()" *ngIf="!blogFound">
+    <button [style.margin-top.px]="5" [disabled]="processing" class="btn btn-default">
+      Back
+    </button>
+  </a>
+</div>

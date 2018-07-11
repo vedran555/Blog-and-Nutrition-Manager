@@ -1,0 +1,27 @@
+<div class="container">
+  <h2 class="page-header">Profile Page</h2>
+  <ul class="list-group">
+    <li *ngIf="user?.username" class="list-group-item">Username: {{user.username}}</li>
+    <li *ngIf="user?.email" class="list-group-item">E-mail: {{user.email}}</li>
+  </ul>
+  <div class="table-responsive" *ngIf="usersToApprove">
+    <h4 [style.margin-bottom.px]="20">Approve users registration:</h4>
+    <table class="table">
+      <tr>
+        <th>Username</th>
+        <th>E-mail</th>
+        <th>Is approved</th>
+        <th></th>
+      </tr>
+      <tr *ngFor="let user of usersToApprove">
+        <td>{{user.username}}</td>
+        <td>{{user.email}}</td>
+        <td>{{user.approved}}</td>
+        <td>
+          <button class="btn btn-sm btn-success" (click)="approveRegistrationRequest(user._id)">Approve</button>
+          <button class="btn btn-sm btn-danger" (click)="deleteRequest(user._id)">Delete</button>
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>

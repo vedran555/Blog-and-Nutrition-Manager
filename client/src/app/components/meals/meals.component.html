@@ -1,0 +1,142 @@
+<mat-expansion-panel>
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Enter your todays meals&nbsp;<i class="material-icons" [style.font-size.px]="18">fastfood</i>
+      </mat-panel-title>
+      <mat-panel-description>
+        <!-- some optional description -->
+      </mat-panel-description>
+    </mat-expansion-panel-header>
+
+    <form #mealsForm="ngForm" (ngSubmit)="onSubmitToDatabase()">
+      <!-- ######################    breakfast    #################### -->
+      <span><strong>Breakfast</strong></span><br />
+      <div [ngClass]="{'meal-wrapper': screenService.isLarge(), 'meal-wrapper-small': !screenService.isLarge()}">
+        <div class="food-wrapper">
+          <div [style.margin-right.px]="10" class="input-field">
+            <input placeholder="Enter food" name="breakfastFoodItem" [(ngModel)]="breakfastFoodItem" (input)="getmatchedBreakfasts()"
+            keydownEvent (keydownEvent)="onKeyDown($event)" (keydown.enter)="onEnter()" class="input-food">
+          </div>
+          <span *ngIf="breakfErrMsg!=''" style="color:red; font-size:10.5px">{{breakfErrMsg}}</span>
+          <div class="dropdown-box" style="max-height: 100px">
+            <ul class="dropdown-list">
+              <li class="dropdown-item" *ngFor="let groc of matchedBreakfasts; let i = index" 
+              (click)="onItemClick(groc, i)" clickOutside (clickOutside)="matchedBreakfasts=null;this.currentBreakfast=null;indBreakfast=-1"
+              (mouseover)="onMouseOver(groc, i)" (mouseout)="onMouseOut()"
+              [ngClass]="{'dropdown-item-hover': indBreakfast==i}">
+               {{groc.food}}
+              </li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="quant-wrapper">
+          <div [style.margin-right.px]="30">
+            <input placeholder="Enter quantity" name="breakfastQuantityItem" [(ngModel)]="breakfastQuantityItem" size="15">
+          </div>
+          <span *ngIf="breakfQuantErrMsg!=''" style="color:red; font-size:10.5px">{{breakfQuantErrMsg}}</span>
+        </div>
+        <button class="btn btn-sm btn-success add-button" type="button" (click)="addBreakfastItem()"
+        [ngClass]="{'button-add-small': !screenService.isLarge()}">add</button>
+      </div>
+
+      <mat-divider [style.margin-top.px]="15" [style.margin-bottom.px]="15"></mat-divider>
+      <!-- ######################    lunch    #################### -->
+      <span><strong>Lunch</strong></span><br />
+      <div [ngClass]="{'meal-wrapper': screenService.isLarge(), 'meal-wrapper-small': !screenService.isLarge()}">
+        <div class="food-wrapper">
+          <div [style.margin-right.px]="10" class="input-field">
+            <input placeholder="Enter food" name="lunchFoodItem" [(ngModel)]="lunchFoodItem" (input)="getmatchedLunchs()"
+            keydownEvent (keydownEvent)="onKeyDownLunch($event)" (keydown.enter)="onEnterLunch()" class="input-food">
+          </div>
+          <span *ngIf="lunchErrMsg!=''" style="color:red; font-size:10.5px">{{lunchErrMsg}}</span>
+          <div class="dropdown-box" style="max-height: 100px">
+            <ul class="dropdown-list">
+              <li class="dropdown-item" *ngFor="let groc of matchedLunchs; let i = index" 
+              (click)="onItemClickLunch(groc, i)" clickOutside (clickOutside)="matchedLunchs=null;this.currentLunch=null;indLunch=-1"
+              (mouseover)="onMouseOverLunch(groc, i)" (mouseout)="onMouseOutLunch()"
+              [ngClass]="{'dropdown-item-hover': indLunch==i}">
+               {{groc.food}}
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="quant-wrapper">
+          <div [style.margin-right.px]="30">
+            <input placeholder="Enter quantity" name="lunchQuantityItem" [(ngModel)]="lunchQuantityItem" size="15">
+          </div>
+          <span *ngIf="lunchQuantErrMsg!=''" style="color:red; font-size:10.5px">{{lunchQuantErrMsg}}</span>
+        </div>
+        <button class="btn btn-sm btn-success add-button" type="button" (click)="addLunchItem()"
+        [ngClass]="{'button-add-small': !screenService.isLarge()}">add</button>
+      </div>
+
+      <mat-divider [style.margin-top.px]="15" [style.margin-bottom.px]="15"></mat-divider>
+      <!-- ######################    dinner    #################### -->
+      <span><strong>Dinner</strong></span><br />
+      <div [ngClass]="{'meal-wrapper': screenService.isLarge(), 'meal-wrapper-small': !screenService.isLarge()}">
+        <div class="food-wrapper">
+          <div [style.margin-right.px]="10" class="input-field">
+            <input placeholder="Enter food" name="dinnerFoodItem" [(ngModel)]="dinnerFoodItem" (input)="getmatchedDinners()"
+            keydownEvent (keydownEvent)="onKeyDownDinner($event)" (keydown.enter)="onEnterDinner()" class="input-food">
+          </div>
+          <span *ngIf="dinnerErrMsg!=''" style="color:red; font-size:10.5px">{{dinnerErrMsg}}</span>
+          <div class="dropdown-box" style="max-height: 100px">
+            <ul class="dropdown-list">
+              <li class="dropdown-item" *ngFor="let groc of matchedDinners; let i = index" 
+              (click)="onItemClickDinner(groc, i)" clickOutside (clickOutside)="matchedDinners=null;this.currentDinner=null;indDinner=-1"
+              (mouseover)="onMouseOverDinner(groc, i)" (mouseout)="onMouseOutDinner()"
+              [ngClass]="{'dropdown-item-hover': indDinner==i}">
+               {{groc.food}}
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="quant-wrapper">
+          <div [style.margin-right.px]="30">
+            <input placeholder="Enter quantity" name="dinnerQuantityItem" [(ngModel)]="dinnerQuantityItem" size="15">
+          </div>
+          <span *ngIf="dinnerQuantErrMsg!=''" style="color:red; font-size:10.5px">{{dinnerQuantErrMsg}}</span>
+        </div>
+        <button class="btn btn-sm btn-success add-button" type="button" (click)="addDinnerItem()"
+        [ngClass]="{'button-add-small': !screenService.isLarge()}">add</button>
+      </div>
+
+      <mat-divider [style.margin-top.px]="15" [style.margin-bottom.px]="15"></mat-divider>
+      <!-- ######################    additionally    #################### -->
+      <span><strong>Additionally</strong></span><br />
+      <div [ngClass]="{'meal-wrapper': screenService.isLarge(), 'meal-wrapper-small': !screenService.isLarge()}"
+      style="margin-bottom: 10px">
+        <div class="food-wrapper">
+          <div [style.margin-right.px]="10" class="input-field">
+            <input placeholder="Enter food" name="additionallyFoodItem" [(ngModel)]="additionallyFoodItem" (input)="getmatchedAdditionallys()"
+            keydownEvent (keydownEvent)="onKeyDownAdditionally($event)" (keydown.enter)="onEnterAdditionally()" class="input-food">
+          </div>
+          <span *ngIf="additionallyErrMsg!=''" style="color:red; font-size:10.5px">{{additionallyErrMsg}}</span>
+          <div class="dropdown-box" style="max-height: 100px">
+            <ul class="dropdown-list">
+              <li class="dropdown-item" *ngFor="let groc of matchedAdditionallys; let i = index" 
+              (click)="onItemClickAdditionally(groc, i)" clickOutside (clickOutside)="matchedAdditionallys=null;this.currentAdditionally=null;indAdditionally=-1"
+              (mouseover)="onMouseOverAdditionally(groc, i)" (mouseout)="onMouseOutAdditionally()"
+              [ngClass]="{'dropdown-item-hover': indAdditionally==i}">
+               {{groc.food}}
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="quant-wrapper">
+          <div [style.margin-right.px]="30">
+            <input placeholder="Enter quantity" name="additionallyQuantityItem" [(ngModel)]="additionallyQuantityItem" size="15">
+          </div>
+          <span *ngIf="additionallyQuantErrMsg!=''" style="color:red; font-size:10.5px">{{additionallyQuantErrMsg}}</span>
+        </div>
+        <button class="btn btn-sm btn-success add-button" type="button" (click)="addAdditionallyItem()"
+        [ngClass]="{'button-add-small': !screenService.isLarge()}">add</button>
+      </div>
+
+    </form>
+
+</mat-expansion-panel>

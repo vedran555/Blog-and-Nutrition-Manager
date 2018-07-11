@@ -1,0 +1,158 @@
+<div class="container">
+    <div style="margin: 10px 0 10px 0;">
+      <mat-toolbar>Edit meals: {{date}} &nbsp;&nbsp;
+        <span matTooltip="delete all meals" (click)="removeMeal()" *ngIf="!todaysMealsEmpty">
+          <i class="material-icons delete-forever">delete_forever</i>
+        </span>
+      </mat-toolbar>
+    </div>
+
+    <div style="margin: 0 0 15px 0;">
+      <span matTooltip="back to Nutrition Manager" style="margin-left: 5px;">
+        <a type="button" mat-mini-fab color="accent" [routerLink]="['/nutritionmanager']"
+        queryParamsHandling="preserve">
+          <i class="material-icons">arrow_back</i>
+        </a>
+      </span>
+      <span matTooltip="save changes" *ngIf="gettingMealsDone" style="float:right;">
+        <a type="button" mat-mini-fab [routerLink]="['/nutritionmanager']"
+        queryParamsHandling="preserve">
+          <i class="material-icons">check</i>
+        </a>
+      </span>
+    </div>
+
+    <div class="row" style="margin-bottom: 20px;" [ngClass]="{'wrapper-all': !screenService.isLarge()}">
+      <div class="col-md-3"></div>
+
+        <div class="col-md-6 add-new-food">
+          <div style="margin-bottom: 15px; display:flex; justify-content:center;">
+            <h4>Add new food:</h4>
+          </div>
+          <div style="text-align: center;">
+            <mat-radio-group name="meal" [(ngModel)]="meal">
+              <mat-radio-button value="breakfast">
+                  Breakfast
+              </mat-radio-button>
+              <mat-radio-button value="lunch">
+                  Lunch
+              </mat-radio-button>
+              <mat-radio-button value="dinner">
+                  Dinner
+              </mat-radio-button>
+              <mat-radio-button value="additionally">
+                  Additionally
+              </mat-radio-button>
+            </mat-radio-group>
+          </div>
+
+          <div [ngClass]="{'meal-wrapper': screenService.isLarge(), 'meal-wrapper-small': !screenService.isLarge()}"
+          style="display:flex; justify-content:center; padding-bottom: 8px;">
+              <div class="food-wrapper">
+                <div class="input-field"
+                [ngClass]="{'food-margin': screenService.isLarge()}">
+                  <input placeholder="Enter food" name="lunchFoodItem" [(ngModel)]="lunchFoodItem" (input)="getmatchedLunchs()"
+                  keydownEvent (keydownEvent)="onKeyDownLunch($event)" (keydown.enter)="onEnterLunch()" class="input-food">
+                </div>
+                <span *ngIf="lunchErrMsg!=''" style="color:red; font-size:10.5px">{{lunchErrMsg}}</span>
+                <div class="dropdown-box" style="max-height: 100px">
+                  <ul class="dropdown-list">
+                    <li class="dropdown-item" *ngFor="let groc of matchedLunchs; let i = index" 
+                    (click)="onItemClickLunch(groc, i)" clickOutside (clickOutside)="matchedLunchs=null;this.currentLunch=null;indLunch=-1"
+                    (mouseover)="onMouseOverLunch(groc, i)" (mouseout)="onMouseOutLunch()"
+                    [ngClass]="{'dropdown-item-hover': indLunch==i}">
+                     {{groc.food}}
+                    </li>
+                  </ul>
+                </div>
+              </div>
+      
+              <div class="quant-wrapper">
+                <div [ngClass]="{'input-field': !screenService.isLarge(), 'quantity-margin': screenService.isLarge()}">
+                  <input placeholder="Enter quantity" name="lunchQuantityItem" [(ngModel)]="lunchQuantityItem"  
+                  [ngClass]="{'input-food': !screenService.isLarge()}">
+                </div>
+                <span *ngIf="lunchQuantErrMsg!=''" style="color:red; font-size:10.5px">{{lunchQuantErrMsg}}</span>
+              </div>
+              <button class="btn btn-sm btn-success add-button" type="button" (click)="addLunchItem()"
+              [ngClass]="{'button-add-small': !screenService.isLarge()}">add</button>
+          </div>
+        </div>
+      <div class="col-md-3"></div>
+    </div>
+
+    <div *ngIf="!gettingMealsDone" class="spinner-wrapper">
+      <mat-spinner [diameter]="70"></mat-spinner>
+    </div>
+
+    <div *ngIf="todaysMealsEmpty" class="spinner-wrapper">
+      <span style="margin: auto;">No food for this date.</span>
+    </div>
+
+    <div class="table-responsive" *ngIf="gettingMealsDone && !todaysMealsEmpty">
+      <table class="table table-hover">
+        <thead class="thead-light">
+          <tr>
+            <th scope="col"></th> 
+            <th scope="col">grocerie</th>
+            <th scope="col">quantity(g)</th>
+            <th scope="col">energy(kcal)</th>
+            <th scope="col">proteins(g)</th>
+            <th scope="col">carbohydrates(g)</th>
+            <th scope="col">sugar(g)</th>
+            <th scope="col">fat(g)</th>
+            <th scope="col">saturated(g)</th>
+            <th scope="col">monounsaturated(g)</th>
+          </tr>
+        </thead>
+        <tbody *ngFor="let array of todaysMeals; let i = index">
+          <tr id="meal-calculaton-table">
+            <td colspan="10"><strong>{{mealNames[i]}}</strong></td>
+          </tr>
+          <tr *ngFor="let item of array">
+            <td scope="col">
+              <div style="display:flex;">
+                <span matTooltip="delete" id="delete-food" 
+                (click)="deleteFood(item.food, item.quantity, i)">
+                  <i class="material-icons">delete</i>
+                </span>
+              </div>
+            </td>
+            <td scope="col">{{item.food}}</td>
+            <td scope="col">{{item.quantity}}</td>
+            <td scope="col">{{item.energy}}</td>
+            <td scope="col">{{item.proteins}}</td>
+            <td scope="col">{{item.carbohydrates}}</td>
+            <td scope="col">{{item.sugar}}</td>
+            <td scope="col">{{item.fat}}</td>
+            <td scope="col">{{item.saturated}}</td>
+            <td scope="col">{{item.monounsaturated}}</td>
+          </tr>
+          <tr>
+            <td><strong>&Sigma;</strong></td>
+            <td scope="col"></td>
+            <td scope="col"></td>
+            <td scope="col">{{todaysInfos[i].energy}}</td>
+            <td scope="col">{{todaysInfos[i].proteins}}</td>
+            <td scope="col">{{todaysInfos[i].carbohydrates}}</td>
+            <td scope="col">{{todaysInfos[i].sugar}}</td>
+            <td scope="col">{{todaysInfos[i].fat}}</td>
+            <td scope="col">{{todaysInfos[i].saturated}}</td>
+            <td scope="col">{{todaysInfos[i].monounsaturated}}</td>
+          </tr>
+        </tbody>
+        <tr id="row-total">
+            <td><strong>TOTAL</strong></td>
+            <td scope="col"></td>
+            <td scope="col"></td>
+            <td scope="col"><strong>{{totalInfo.energy}}</strong></td>
+            <td scope="col"><strong>{{totalInfo.proteins}}</strong></td>
+            <td scope="col"><strong>{{totalInfo.carbohydrates}}</strong></td>
+            <td scope="col"><strong>{{totalInfo.sugar}}</strong></td>
+            <td scope="col"><strong>{{totalInfo.fat}}</strong></td>
+            <td scope="col"><strong>{{totalInfo.saturated}}</strong></td>
+            <td scope="col"><strong>{{totalInfo.monounsaturated}}</strong></td>
+        </tr>
+      </table>
+    </div> 
+</div>

@@ -1,0 +1,8 @@
+<div class="container">
+  <h2 class="page-header">User's Profile</h2>
+  <ul class="list-group">
+    <li class="list-group-item" *ngIf="username">Username: {{username}}</li>
+    <li class="list-group-item" *ngIf="email">E-mail: {{email}}</li>
+  </ul>
+  <button type="button" class="btn btn-primary" (click)="goToBlogs()">Go to blogs</button>
+</div>

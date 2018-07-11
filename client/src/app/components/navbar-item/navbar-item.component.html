@@ -1,0 +1,5 @@
+<div *ngIf="item.show" [routerLink]="[item.route]" 
+  [ngClass]="{'item': screenService.isLarge() , 'small-item': !screenService.isLarge() , 'router-link-active': isActive}"
+  >
+  {{item.name}}
+</div>

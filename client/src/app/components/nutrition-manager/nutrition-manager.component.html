@@ -1,0 +1,612 @@
+<div class="container">
+  <div class="row">
+    <div class="col-md-12" [style.margin-top.px]="10" [style.margin-left.px]="0" [style.margin-right.px]="0">
+      <mat-toolbar [style.width]="'100%'">My Nutrition Manager</mat-toolbar>
+    </div>
+  </div>
+  
+  <!-- enter info and hide buttons -->
+  <div *ngIf="!checkedIfprovidedInfo">
+    Preparing things, please wait just a second...
+  </div>
+
+  <div class="row hide-show-info-section-buttons" *ngIf="checkedIfprovidedInfo">
+    <div class="col-md-4">
+      <button color="primary" mat-button (click)="showInfoSection=true" *ngIf="!showInfoSection && !providedInfo
+      && !calculating" [style.margin-top.px]="5">
+        Enter Your info <i class="material-icons">arrow_drop_down</i>
+      </button>
+      <button color="primary" mat-button (click)="showInfoSection=false" *ngIf="showInfoSection && !providedInfo
+      && !calculating" [style.margin-top.px]="5">
+        Hide <i class="material-icons">arrow_drop_up</i>
+      </button>
+      <div class="calories" *ngIf="providedInfo">
+        <i class="material-icons" style="font-size:20px">person</i>
+        My daily calory limit: <strong>{{caloryLimit}}kcal</strong>
+      </div>
+
+      <div *ngIf="totalInfo !== undefined">
+        <div *ngIf="checkedIfprovidedInfo && providedInfo && (caloryLimit - totalInfo?.energy)>=0">
+          <div>
+            <div class="calories" *ngIf="providedInfo" style="background-color:#673ab7; color:white">
+              <i class="material-icons" style="font-size:20px">restaurant</i>
+              Calories to go: &nbsp;<strong>{{caloryLimit - totalInfo.energy}}kcal</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    
+      <div *ngIf="totalInfo !== undefined">
+        <div *ngIf="checkedIfprovidedInfo && providedInfo && (caloryLimit - totalInfo?.energy)<0">
+          <div>
+            <div class="calories" *ngIf="providedInfo" style="background-color:#f76565; color:white">
+              <i class="glyphicon glyphicon-exclamation-sign" style="font-size:20px"></i>
+              Calory limit crossed for: &nbsp;<strong>{{-(caloryLimit - totalInfo.energy)}}kcal</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="col-md-8" *ngIf="!calculating">
+      <button color="accent" mat-button (click)="showEditSection=true" *ngIf="!showEditSection && providedInfo" 
+      style="margin-top:5px;float:right;">
+      <i class="material-icons" style="font-size:18px !important; vertical-align:middle;">edit</i> Edit Your info
+      </button>
+      <button color="accent" mat-button (click)="showEditSection=false" *ngIf="showEditSection && providedInfo" 
+      [style.margin-top.px]="5" [style.float]="'right'">
+      <i class="material-icons">arrow_drop_up</i> Hide
+      </button>
+    </div>
+  </div>
+
+  <!--###### enter info form #####-->
+  <div class="row" *ngIf="!providedInfo && showInfoSection">
+    <div class="col-md-8 info-section" *ngIf="!calculating">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="info-form">
+        <mat-form-field class="info-form-field">
+            <input matInput placeholder="Enter age" name="age" formControlName="age">
+            <mat-error *ngIf="form.controls.age.errors?.required && form.controls.age.dirty">
+              *Age is <strong>required</strong>
+            </mat-error>
+            <mat-error *ngIf="form.controls.age.errors?.validateAge && form.controls.age.dirty
+            && !form.controls.age.errors?.required">
+              *Please enter <strong>valid age</strong>
+            </mat-error> 
+        </mat-form-field>
+        <br />
+
+        <mat-form-field class="info-form-field">
+            <input matInput placeholder="Enter height" name="height" formControlName="height">
+            <mat-error *ngIf="form.controls.height.errors?.required && form.controls.height.dirty">
+              *Height is <strong>required</strong>
+            </mat-error>
+            <mat-error *ngIf="form.controls.height.errors?.validateHeight && form.controls.height.dirty
+            && !form.controls.height.errors?.required">
+              *Please enter <strong>valid height in 'cm'</strong>
+            </mat-error> 
+        </mat-form-field>
+        <br />
+        
+        <mat-form-field class="info-form-field">
+            <input matInput placeholder="Enter weight" name="weight" formControlName="weight">
+            <mat-error *ngIf="form.controls.weight.errors?.required && form.controls.weight.dirty">
+              *Weight is <strong>required</strong>
+            </mat-error>
+            <mat-error *ngIf="form.controls.weight.errors?.validateWeight && form.controls.weight.dirty
+            && !form.controls.weight.errors?.required">
+              *Please enter <strong>valid weight in 'kg'</strong>
+            </mat-error> 
+        </mat-form-field>
+        <br />
+
+        <mat-form-field class="info-form-field">
+            <mat-select placeholder="Your gender" name="gender" formControlName="gender">
+              <mat-option [value]="'male'">male</mat-option>
+              <mat-option [value]="'female'">female</mat-option>
+            </mat-select>
+            <mat-error *ngIf="form.controls.gender.errors?.required && form.controls.gender.touched">
+              *Gender is <strong>required</strong>
+            </mat-error>
+        </mat-form-field>
+          <br />
+
+          <div [style.margin-bottom.px]="10">Activity level:</div> 
+          <mat-radio-group name="activity" formControlName="activity">
+            <mat-radio-button value="sedentary">
+              <span matTooltip="Office worker getting little or no exercise" matTooltipShowDelay="400">
+                Sedentary or light activity
+              </span>
+            </mat-radio-button>
+            <mat-radio-button value="moderately_active">
+              <span matTooltip="Construction worker or person running one hour daily" matTooltipShowDelay="400">
+                Active or moderately active
+              </span>
+            </mat-radio-button>
+            <mat-radio-button value="vigorously_active">
+              <span matTooltip="Agricultural worker (non mechanized) or person swimming two hours daily" matTooltipShowDelay="400">
+                  Vigorously active
+              </span>
+            </mat-radio-button>
+          </mat-radio-group>
+          <mat-error *ngIf="form.controls.activity.errors?.required && form.controls.activity.untouched">
+            <strong>*Select one</strong> of the activity levels
+          </mat-error>
+          <br />
+          
+          <div class="info-section-buttons-div">
+            <button [disabled]="!form.valid" mat-fab type="submit" class="submit-info-section">
+              <i class="material-icons" [style.color]="'white'">done</i>
+            </button>
+          </div> 
+
+      </form>
+    </div>
+    <div *ngIf="calculating">
+      <mat-spinner></mat-spinner>
+    </div>
+  </div>
+
+  <!--##### edit info form #####-->
+  <div class="row" *ngIf="providedInfo && showEditSection">
+    <div class="col-md-4" [style.margin-left.px]="-15"></div>
+    <div class="col-md-8 edit-section" [ngClass]="{'edit-section': screenService.isLarge(), 
+    'edit-section-small': !screenService.isLarge() }">
+      <form [formGroup]="editForm" (ngSubmit)="onSubmitEdit()" class="info-form">
+        <mat-form-field class="info-form-field">
+            <input matInput placeholder="Enter age" name="age" formControlName="age">
+            <mat-error *ngIf="editForm.controls.age.errors?.required && editForm.controls.age.dirty">
+              *Age is <strong>required</strong>
+            </mat-error>
+            <mat-error *ngIf="editForm.controls.age.errors?.validateAge && editForm.controls.age.dirty
+            && !editForm.controls.age.errors?.required">
+              *Please enter <strong>valid age</strong>
+            </mat-error> 
+        </mat-form-field>
+        <br />
+
+        <mat-form-field class="info-form-field">
+            <input matInput placeholder="Enter height" name="height" formControlName="height">
+            <mat-error *ngIf="editForm.controls.height.errors?.required && editForm.controls.height.dirty">
+              *Height is <strong>required</strong>
+            </mat-error>
+            <mat-error *ngIf="editForm.controls.height.errors?.validateHeight && editForm.controls.height.dirty
+            && !editForm.controls.height.errors?.required">
+              *Please enter <strong>valid height in 'cm'</strong>
+            </mat-error> 
+        </mat-form-field>
+        <br />
+        
+        <mat-form-field class="info-form-field">
+            <input matInput placeholder="Enter weight" name="weight" formControlName="weight">
+            <mat-error *ngIf="editForm.controls.weight.errors?.required && editForm.controls.weight.dirty">
+              *Weight is <strong>required</strong>
+            </mat-error>
+            <mat-error *ngIf="editForm.controls.weight.errors?.validateWeight && editForm.controls.weight.dirty
+            && !editForm.controls.weight.errors?.required">
+              *Please enter <strong>valid weight in 'kg'</strong>
+            </mat-error> 
+        </mat-form-field>
+        <br />
+
+        <mat-form-field class="info-form-field">
+            <mat-select placeholder="Your gender" name="gender" formControlName="gender">
+              <mat-option [value]="'male'">male</mat-option>
+              <mat-option [value]="'female'">female</mat-option>
+            </mat-select>
+            <mat-error *ngIf="editForm.controls.gender.errors?.required && editForm.controls.gender.touched">
+              *Gender is <strong>required</strong>
+            </mat-error>
+        </mat-form-field>
+          <br />
+
+          <div [style.margin-bottom.px]="10">Activity level:</div> 
+          <mat-radio-group name="activity" formControlName="activity">
+            <mat-radio-button value="sedentary">
+              <span matTooltip="Office worker getting little or no exercise" matTooltipShowDelay="400">
+                Sedentary or light activity
+              </span>
+            </mat-radio-button>
+            <mat-radio-button value="moderately_active">
+              <span matTooltip="Construction worker or person running one hour daily" matTooltipShowDelay="400">
+                Active or moderately active
+              </span>
+            </mat-radio-button>
+            <mat-radio-button value="vigorously_active">
+              <span matTooltip="Agricultural worker (non mechanized) or person swimming two hours daily" matTooltipShowDelay="400">
+                Vigorously active
+              </span>
+            </mat-radio-button>
+          </mat-radio-group>
+          <mat-error *ngIf="editForm.controls.activity.errors?.required && editForm.controls.activity.untouched">
+            <strong>*Select one</strong> of the activity levels
+          </mat-error>
+          <br />
+          
+          <div class="info-section-buttons-div">
+            <button [disabled]="!editForm.valid" mat-fab type="submit" class="submit-info-section">
+              <i class="material-icons" [style.color]="'white'">done</i>
+            </button>
+          </div> 
+
+      </form>
+    </div>
+  </div>
+
+  <!-- ######## search food ########### -->
+  <div class="row" [ngClass]="{'search-row': !showSearchInput, 'search-row-opened': showSearchInput}">
+    <div class="col-sm-3 search-text" style="display: flex; flex: 1;">
+      <div style="display: flex; flex: 1; margin: auto;">
+        <span matTooltip="search food" (click)="onExpand()" id="search-sign" *ngIf="!showSearchInput">
+          <i class="material-icons">search</i>
+        </span>
+        <span matTooltip="hide search" (click)="onHideSearch()" id="search-sign" *ngIf="showSearchInput">
+          <i class="material-icons">chevron_left</i>
+        </span>
+       
+        <div [hidden]="!showSearchInput">
+            <input placeholder="Enter food" class="input-food" [(ngModel)]="searchText" (input)="getMatchedGroceries()"
+              keydownEvent (keydownEvent)="onKeyDown($event)" (keydown.enter)="onEnter()" #foodSearch>
+            <ul class="dropdown-list">
+              <li class="dropdown-item" *ngFor="let groc of matchedGroceries; let i=index" 
+              (click)="onItemClick(groc, i)" clickOutside (clickOutside)="matchedGroceries=null;this.currentGrocerie=null;ind=-1"
+              (mouseover)="onMouseOver(groc, i)" (mouseout)="onMouseOut()"
+              [ngClass]="{'dropdown-item-hover': ind==i}">
+              {{groc.food}}
+              </li>
+            </ul>
+        </div>
+      </div>
+    </div>
+
+    <div  *ngIf="showSearchInput">
+      <div style="display: flex; min-height: 60px;">
+        <div *ngIf="!foodFound && searchPerformed" style="margin: auto;">
+          No result
+        </div>
+        <div class="table-responsive" *ngIf="foodFound && searchPerformed">
+          <table class="table">
+            <thead class="thead-light">
+              <tr>
+                <th scope="col">grocerie</th>
+                <th scope="col">energy</th>
+                <th scope="col">proteins</th>
+                <th scope="col">carbohydrates</th>
+                <th scope="col">sugar</th>
+                <th scope="col">fat</th>
+                <th scope="col">saturated</th>
+                <th scope="col">monounsaturated</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td scope="col">{{searchedFood.food}}</td>
+                <td scope="col">{{searchedFood.energy}}kcal</td>
+                <td scope="col">{{searchedFood.proteins}}</td>
+                <td scope="col">{{searchedFood.carbohydrates}}</td>
+                <td scope="col">{{searchedFood.sugar}}</td>
+                <td scope="col">{{searchedFood.fat}}</td>
+                <td scope="col">{{searchedFood.saturated}}</td>
+                <td scope="col">{{searchedFood.monounsaturated}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div *ngIf="foodFound && searchPerformed" class="gr">
+        <span>*per 100g</span>
+      </div>
+    </div>
+
+  </div>
+
+  
+  <!-- ###### enter todays meals ########## , ############# todays meals table ######### --> 
+  <div class="row" *ngIf="providedInfo">
+    <div class="col-md-8">
+      <!-- enter meals -->
+      <app-meals #meals></app-meals>
+
+
+
+      <div *ngIf="!screenService.isLarge()" style="margin-top:20px;">
+          <!-- #################   breakfast    ####### -->
+          <ul class="meal-list" *ngIf="meals.breakfastItems!=''">
+            <div style="display:flex; justify-content:center; align-items:center;">
+              <img src="../../assets/breakfast.jpg" alt="Avatar" class="img"> 
+              <h5 style="text-align:center; margin-left:5px;"><strong class="side-bar">Breakfast</strong></h5>
+            </div>
+            <li *ngFor="let breakf of meals.breakfastItems" class="meal-item">
+              <i class="material-icons" [style.font-size.px]="14">check</i>
+              <span class="side-bar">{{breakf.food}} - {{breakf.quantity}}g</span>
+              <span (click)="removeFromArray(meals.breakfastItems, breakf)" class="times">&times;</span>
+            </li>
+            <div style="text-align:center; height:20px; margin:5px 0 5px 0">
+              <span matTooltip="click to submit breakfast">
+                <button type="button" (click)="pushTodaysBreakfast(meals.breakfastItems); meals.breakfastItems=[]"
+                class="btn btn-sm btn-success">
+                  <i class="material-icons" style="font-size:13px; font-weight:bold; vertical-align:middle">check</i>
+                </button> 
+              </span>
+            </div>
+          </ul>
+          <!-- #################   lunch    ####### -->
+          <ul class="meal-list" *ngIf="meals.lunchItems!=''">
+            <div style="display:flex; justify-content:center; align-items:center;">
+              <img src="../../assets/lunch.jpg" alt="Avatar" class="img"> 
+              <h5 style="text-align:center; margin-left:5px;"><strong class="side-bar">Lunch</strong></h5>
+            </div>
+            <li *ngFor="let breakf of meals.lunchItems" class="meal-item">
+              <i class="material-icons" [style.font-size.px]="14">check</i>
+              <span class="side-bar">{{breakf.food}} - {{breakf.quantity}}g</span>
+              <span (click)="removeFromArray(meals.lunchItems, breakf)" class="times">&times;</span>
+            </li>
+            <div style="text-align:center; height:20px; margin:5px 0 5px 0">
+                <span matTooltip="click to submit lunch">
+                  <button type="button" (click)="pushTodaysLunch(meals.lunchItems); meals.lunchItems=[]"
+                  class="btn btn-sm btn-success">
+                    <i class="material-icons" style="font-size:13px; font-weight:bold; vertical-align:middle">check</i>
+                  </button> 
+                </span>
+              </div> 
+          </ul>
+          <!-- #################   dinner    ####### -->
+          <ul class="meal-list" *ngIf="meals.dinnerItems!=''">
+              <div style="display:flex; justify-content:center; align-items:center;">
+                <img src="../../assets/dinner.jpg" alt="Avatar" class="img"> 
+                <h5 style="text-align:center; margin-left:5px;"><strong class="side-bar">Dinner</strong></h5>
+              </div>
+              <li *ngFor="let breakf of meals.dinnerItems" class="meal-item">
+                <i class="material-icons" [style.font-size.px]="14">check</i>
+                <span class="side-bar">{{breakf.food}} - {{breakf.quantity}}g</span>
+                <span (click)="removeFromArray(meals.dinnerItems, breakf)" class="times">&times;</span>
+              </li>
+              <div style="text-align:center; height:20px; margin:5px 0 5px 0">
+                  <span matTooltip="click to submit dinner">
+                    <button type="button" (click)="pushTodaysDinner(meals.dinnerItems); meals.dinnerItems=[]"
+                    class="btn btn-sm btn-success">
+                      <i class="material-icons" style="font-size:13px; font-weight:bold; vertical-align:middle">check</i>
+                    </button> 
+                  </span>
+                </div> 
+            </ul>
+          <!-- #################   additionally    ####### -->
+          <ul class="meal-list" *ngIf="meals.additionallyItems!=''">
+            <div style="display:flex; justify-content:center; align-items:center;">
+              <img src="../../assets/additionally.jpg" alt="Avatar" class="img"> 
+              <h5 style="text-align:center; margin-left:5px;"><strong class="side-bar">Additionally</strong></h5>
+            </div>
+            <li *ngFor="let breakf of meals.additionallyItems" class="meal-item">
+              <i class="material-icons" [style.font-size.px]="14">check</i>
+              <span class="side-bar">{{breakf.food}} - {{breakf.quantity}}g</span>
+              <span (click)="removeFromArray(meals.additionallyItems, breakf)" class="times">&times;</span>
+            </li>
+            <div style="text-align:center; height:20px; margin:5px 0 5px 0">
+                <span matTooltip="click to submit additionally food">
+                  <button type="button" (click)="pushTodaysAdditionally(meals.additionallyItems); meals.additionallyItems=[]"
+                  class="btn btn-sm btn-success">
+                    <i class="material-icons" style="font-size:13px; font-weight:bold; vertical-align:middle">check</i>
+                  </button> 
+                </span>
+              </div> 
+          </ul>
+        </div>
+
+
+
+      <!-- entered todays meals -->
+      <h4 style="margin:15px 0 10px 5px">
+          <i class="material-icons" style="vertical-align:bottom;">person</i>My todays meals:
+      </h4>
+      <div *ngIf="!gettingMealsDone">
+        <span style="font-size:14px">Getting meals info...</span>
+      </div>
+      <div *ngIf="todaysMealsEmpty && gettingMealsDone">
+        <mat-list color="accent">
+          <mat-list-item>(meals not entered yet)</mat-list-item>
+          <mat-list-item style="margin-top:-20px;">
+              Calories to go:<strong style="margin-left:5px">{{caloryLimit}}kcal</strong>
+          </mat-list-item>
+        </mat-list>
+      </div>
+      <div class="table-responsive" *ngIf="!todaysMealsEmpty && gettingMealsDone" 
+      [ngClass]="{'table-width': screenService.isLarge()}"> <!-- table width is crossing col-md-8 but i want it, because i dont want to save scroll on big screens -->
+        <table class="table table-hover" style="min-width: 710px;">
+          <thead class="thead-light">
+            <tr>
+              <th scope="col"></th> 
+              <th scope="col">grocerie</th>
+              <th scope="col">quantity(g)</th>
+              <th scope="col">energy(kcal)</th>
+              <th scope="col">proteins(g)</th>
+              <th scope="col">carbohydrates(g)</th>
+              <th scope="col">sugar(g)</th>
+              <th scope="col">fat(g)</th>
+              <th scope="col">saturated(g)</th>
+              <th scope="col">monounsaturated(g)</th>
+            </tr>
+          </thead>
+          <tbody *ngFor="let array of todaysMeals; let i = index">
+            <tr id="meal-calculaton-table">
+              <td colspan="10"><strong>{{mealNames[i]}}</strong></td>
+            </tr>
+            <tr *ngFor="let item of array">
+              <td scope="col">
+                <div style="display:flex;" *ngIf="!isEditing(item.id)">
+                  <span matTooltip="edit" id="edit-food"
+                  (click)="editQuantity(item.food, item.quantity, item.id)">
+                    <i class="material-icons">edit</i>
+                  </span>
+                  <span matTooltip="delete" id="delete-food" 
+                  (click)="deleteFood(item.food, item.quantity, i)">
+                    <i class="material-icons">delete</i>
+                  </span>
+                </div>
+                <div style="display:flex;" *ngIf="isEditing(item.id)">
+                  <span matTooltip="save" id="done-food"
+                  (click)="onSaveEditing(i)">
+                    <i class="material-icons">done</i>
+                  </span>
+                  <span matTooltip="cancel" id="cancel-food"
+                  (click)="onCancelEditing()">
+                    <i class="material-icons">cancel</i>
+                  </span>
+                </div>
+              </td>
+              <td scope="col">{{item.food}}</td>
+              <td scope="col">
+                <span *ngIf="!isEditing(item.id)">{{item.quantity}}</span>
+                <input type="text" [(ngModel)]="quantityToEdit" name="quantityToEdit" id="quantityToEdit"
+                *ngIf="isEditing(item.id)" size="8" autocomplete="off" maxlength="4">
+                <span *ngIf="quantErrMsg!='' && isEditing(item.id)" 
+                style="color:red; font-size:10.5px">{{quantErrMsg}}</span>
+              </td>
+              <td scope="col">{{item.energy}}</td>
+              <td scope="col">{{item.proteins}}</td>
+              <td scope="col">{{item.carbohydrates}}</td>
+              <td scope="col">{{item.sugar}}</td>
+              <td scope="col">{{item.fat}}</td>
+              <td scope="col">{{item.saturated}}</td>
+              <td scope="col">{{item.monounsaturated}}</td>
+            </tr>
+            <tr>
+              <td><strong>&Sigma;</strong></td>
+              <td scope="col"></td>
+              <td scope="col"></td>
+              <td scope="col">{{todaysInfos[i].energy}}</td>
+              <td scope="col">{{todaysInfos[i].proteins}}</td>
+              <td scope="col">{{todaysInfos[i].carbohydrates}}</td>
+              <td scope="col">{{todaysInfos[i].sugar}}</td>
+              <td scope="col">{{todaysInfos[i].fat}}</td>
+              <td scope="col">{{todaysInfos[i].saturated}}</td>
+              <td scope="col">{{todaysInfos[i].monounsaturated}}</td>
+            </tr>
+          </tbody>
+          <tr id="row-total">
+              <td><strong>TOTAL</strong></td>
+              <td scope="col"></td>
+              <td scope="col"></td>
+              <td scope="col"><strong>{{totalInfo.energy}}</strong></td>
+              <td scope="col"><strong>{{totalInfo.proteins}}</strong></td>
+              <td scope="col"><strong>{{totalInfo.carbohydrates}}</strong></td>
+              <td scope="col"><strong>{{totalInfo.sugar}}</strong></td>
+              <td scope="col"><strong>{{totalInfo.fat}}</strong></td>
+              <td scope="col"><strong>{{totalInfo.saturated}}</strong></td>
+              <td scope="col"><strong>{{totalInfo.monounsaturated}}</strong></td>
+          </tr>
+        </table>
+      </div>
+
+    </div>
+    <div class="col-md-1"></div>
+    <div class="col-md-3" *ngIf="screenService.isLarge()">
+      <!-- #################   breakfast    ####### -->
+      <ul class="meal-list" *ngIf="meals.breakfastItems!=''">
+        <div style="display:flex; justify-content:center; align-items:center;">
+          <img src="../../assets/breakfast.jpg" alt="Avatar" class="img"> 
+          <h5 style="text-align:center; margin-left:5px;"><strong class="side-bar">Breakfast</strong></h5>
+        </div>
+        <li *ngFor="let breakf of meals.breakfastItems" class="meal-item">
+          <i class="material-icons" [style.font-size.px]="14">check</i>
+          <span class="side-bar">{{breakf.food}} - {{breakf.quantity}}g</span>
+          <span (click)="removeFromArray(meals.breakfastItems, breakf)" class="times">&times;</span>
+        </li>
+        <div style="text-align:center; height:20px; margin:5px 0 5px 0">
+          <span matTooltip="click to submit breakfast">
+            <button type="button" (click)="pushTodaysBreakfast(meals.breakfastItems); meals.breakfastItems=[]"
+            class="btn btn-sm btn-success">
+              <i class="material-icons" style="font-size:13px; font-weight:bold; vertical-align:middle">check</i>
+            </button> 
+          </span>
+        </div>
+      </ul>
+      <!-- #################   lunch    ####### -->
+      <ul class="meal-list" *ngIf="meals.lunchItems!=''">
+        <div style="display:flex; justify-content:center; align-items:center;">
+          <img src="../../assets/lunch.jpg" alt="Avatar" class="img"> 
+          <h5 style="text-align:center; margin-left:5px;"><strong class="side-bar">Lunch</strong></h5>
+        </div>
+        <li *ngFor="let breakf of meals.lunchItems" class="meal-item">
+          <i class="material-icons" [style.font-size.px]="14">check</i>
+          <span class="side-bar">{{breakf.food}} - {{breakf.quantity}}g</span>
+          <span (click)="removeFromArray(meals.lunchItems, breakf)" class="times">&times;</span>
+        </li>
+        <div style="text-align:center; height:20px; margin:5px 0 5px 0">
+            <span matTooltip="click to submit lunch">
+              <button type="button" (click)="pushTodaysLunch(meals.lunchItems); meals.lunchItems=[]"
+              class="btn btn-sm btn-success">
+                <i class="material-icons" style="font-size:13px; font-weight:bold; vertical-align:middle">check</i>
+              </button> 
+            </span>
+          </div> 
+      </ul>
+      <!-- #################   dinner    ####### -->
+      <ul class="meal-list" *ngIf="meals.dinnerItems!=''">
+          <div style="display:flex; justify-content:center; align-items:center;">
+            <img src="../../assets/dinner.jpg" alt="Avatar" class="img"> 
+            <h5 style="text-align:center; margin-left:5px;"><strong class="side-bar">Dinner</strong></h5>
+          </div>
+          <li *ngFor="let breakf of meals.dinnerItems" class="meal-item">
+            <i class="material-icons" [style.font-size.px]="14">check</i>
+            <span class="side-bar">{{breakf.food}} - {{breakf.quantity}}g</span>
+            <span (click)="removeFromArray(meals.dinnerItems, breakf)" class="times">&times;</span>
+          </li>
+          <div style="text-align:center; height:20px; margin:5px 0 5px 0">
+              <span matTooltip="click to submit dinner">
+                <button type="button" (click)="pushTodaysDinner(meals.dinnerItems); meals.dinnerItems=[]"
+                class="btn btn-sm btn-success">
+                  <i class="material-icons" style="font-size:13px; font-weight:bold; vertical-align:middle">check</i>
+                </button> 
+              </span>
+            </div> 
+        </ul>
+      <!-- #################   additionally    ####### -->
+      <ul class="meal-list" *ngIf="meals.additionallyItems!=''">
+        <div style="display:flex; justify-content:center; align-items:center;">
+          <img src="../../assets/additionally.jpg" alt="Avatar" class="img"> 
+          <h5 style="text-align:center; margin-left:5px;"><strong class="side-bar">Additionally</strong></h5>
+        </div>
+        <li *ngFor="let breakf of meals.additionallyItems" class="meal-item">
+          <i class="material-icons" [style.font-size.px]="14">check</i>
+          <span class="side-bar">{{breakf.food}} - {{breakf.quantity}}g</span>
+          <span (click)="removeFromArray(meals.additionallyItems, breakf)" class="times">&times;</span>
+        </li>
+        <div style="text-align:center; height:20px; margin:5px 0 5px 0">
+            <span matTooltip="click to submit additionally food">
+              <button type="button" (click)="pushTodaysAdditionally(meals.additionallyItems); meals.additionallyItems=[]"
+              class="btn btn-sm btn-success">
+                <i class="material-icons" style="font-size:13px; font-weight:bold; vertical-align:middle">check</i>
+              </button> 
+            </span>
+          </div> 
+      </ul>
+    </div>
+  </div>
+
+  <!-- ########## tables of meals for earlier days ############ -->
+  <div class="row" *ngIf="providedInfo" style="margin:30px 0 0 0">
+    <div class="row">
+      <div class="col-md-9">
+        <h4>{{periodName()}}</h4>
+      </div>
+      <div class="col-md-3">
+          <mat-form-field class="info-form-field">
+              <mat-select placeholder="Select period" name="period" [(ngModel)]="period" [disabled]="!checkboxPeriod">
+                <mat-option [value]="'3days'">last 3 days</mat-option>
+                <mat-option [value]="'week'">this week</mat-option>
+                <mat-option [value]="'month'">this month</mat-option>
+              </mat-select>
+          </mat-form-field>
+      </div>
+    </div>
+    {{date}}
+    <div class="row">
+      <div class="col-md-12">
+        <app-earlier-days [period]="period" [caloryLimit]="caloryLimit"></app-earlier-days>
+      </div>
+    </div>
+  </div>
+
+  
+</div>

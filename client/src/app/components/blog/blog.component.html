@@ -1,0 +1,489 @@
+<div class="container">
+  <h2 class="page-header">
+    Blog Feed
+  </h2>
+
+  <div class="top-buttons">
+    <button type="button" name="button" class="btn btn-warning" *ngIf="!newPost" (click)="newBlogForm()"
+    [ngClass]="{'btn-sm': !screenService.isLarge()}">
+      New Post
+    </button>
+    <button [disabled]="loadingBlogs" type="button" name="button" class="btn btn-default reload" 
+    *ngIf="!newPost" (click)="reloadBlogs()" [ngClass]="{'btn-sm': !screenService.isLarge()}">
+      <span class="glyphicon glyphicon-repeat"></span>Reload
+    </button>
+    
+    <button class="btn btn-default search" (click)="showSearchBox=true" *ngIf="!newPost && !showSearchBox"
+    [ngClass]="{'btn-sm': !screenService.isLarge()}">
+      <span class="glyphicon glyphicon-chevron-down"></span> Search 
+    </button>
+    <button class="btn btn-default search" (click)="showSearchBox=false" *ngIf="!newPost && showSearchBox"
+    [ngClass]="{'btn-sm': !screenService.isLarge()}">
+      <span class="glyphicon glyphicon-chevron-up"></span> Hide Search</button>
+  </div>
+
+  <!-- search box --> <!-- make search box responsive $##########-->
+  <div *ngIf="showSearchBox && !newPost && !loadingBlogs"
+  [ngClass]="{'searchbox-wrapper': screenService.isLarge(), 'searchbox-wrapper-small': !screenService.isLarge()}">
+    <div [ngClass]="{'searchbox': screenService.isLarge(), 'searchbox-small': !screenService.isLarge()}">
+      <div class="input-box">
+        <div [ngClass]="{'description': screenService.isLarge(), 'description-small': !screenService.isLarge()}">title:</div>
+        <div class="input-div">
+          <div>
+            <input type="text" placeholder="Enter title" (input)="titleSearch()" 
+            [ngClass]="{'inp': screenService.isLarge(), 'inp-small': !screenService.isLarge()}"
+            [(ngModel)]="titleInput" name="titleInput" keydownEvent (keydownEvent)="onKeydown($event)" 
+            (keyup.enter)="onEnter()">
+          </div>
+          <div *ngIf="!isValidTitle()" [style.font-size.px]="12" [style.color]="'#adacac'">
+            <span class="glyphicon glyphicon-info-sign"></span> provide some characters
+          </div>
+          <div *ngIf="titleCond" clickOutside (clickOutside)="toggleDropdown()"
+          [ngClass]="{'dropdown-container': screenService.isLarge(), 'dropdown-container-small': !screenService.isLarge()}">
+            <ul class="dropdown-list">
+              <li class="dropdown-item" *ngFor="let item of titleItems; let i=index"
+                (click)="titleItemClick(item.title)" #itemm (mouseover)="mouseOver(i, item.title)"
+                (mouseout)="mouseOut()"
+                [ngClass]="{'mouseover-drodown-item': ind===i}">{{item.title}}
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="input-box">
+        <div [ngClass]="{'description': screenService.isLarge(), 'description-small': !screenService.isLarge()}">author:</div>
+        <div class="input-div">
+          <div>
+              <input type="text" placeholder="Enter author" (input)="authorSearch()" 
+              [ngClass]="{'inp': screenService.isLarge(), 'inp-small': !screenService.isLarge()}"
+              [(ngModel)]="authorInput" name="authorInput" keydownEvent (keydownEvent)="onKeydownAuthor($event)" 
+              (keyup.enter)="onEnterAuthor()">
+          </div>
+          <div *ngIf="!isValidAuthor()" [style.font-size.px]="12" [style.color]="'#adacac'">
+              <span class="glyphicon glyphicon-info-sign"></span> provide some characters
+            </div>
+          <div *ngIf="authorCond" clickOutside (clickOutside)="toggleDropdownAuthor()"
+          [ngClass]="{'dropdown-container': screenService.isLarge(), 'dropdown-container-small': !screenService.isLarge()}">
+            <ul class="dropdown-list">
+              <li class="dropdown-item" *ngFor="let item of authorItems; let i=index"
+                (click)="authorItemClick(item)" (mouseover)="mouseOverAuthor(i, item)"
+                (mouseout)="mouseOutAuthor()"
+                [ngClass]="{'mouseover-drodown-item': indAuthor===i}">{{item}}
+              </li>
+            </ul>
+          </div>
+          <button [disabled]="!isValidTitle() || !isValidAuthor() || (titleInput==='' && authorInput==='')" 
+          class="btn btn-sm btn-primary go" (click)="searchBlogs()">
+          Go
+        </button>
+        </div>
+      </div>
+      <div [ngClass]="{'warning': screenService.isLarge(), 'warning-small': !screenService.isLarge()}">
+        *leaving field empty will not filter search with it
+      </div>
+    </div>
+  </div>
+  <!-- end of search box -->
+
+  <br /><br />
+
+  
+  <form [formGroup]="form" (ngSubmit)="onBlogSubmit()" *ngIf="newPost">
+      <div class="form-group">
+        <label class="center-block">Title:</label>
+        <div [ngClass]="{'has-error': (form.controls.title.errors && form.controls.title.dirty), 
+          'has-success': !form.controls.title.errors }">
+          <input class="form-control" name="title" placeholder="*Enter title" formControlName="title">
+          <ul class="help-block">
+              <li *ngIf="form.controls.title.errors?.required && form.controls.title.dirty">
+                  <span class="glyphicon glyphicon-exclamation-sign" [style.color]="'rgb(245, 68, 68)'"></span> Title is required
+                </li>
+                <li *ngIf="(form.controls.title.errors?.minlength && form.controls.title.dirty) || 
+              (form.controls.title.errors?.maxlength && form.controls.title.dirty)">
+            <span class="glyphicon glyphicon-exclamation-sign" [style.color]="'rgb(245, 68, 68)'"></span> 
+            Title has to be between 5 and 50 characters long
+          </li>
+          <li *ngIf="form.controls.title.errors?.validateTitle && form.controls.title.dirty && !form.controls.title.errors?.required">
+              <span class="glyphicon glyphicon-exclamation-sign" [style.color]="'rgb(245, 68, 68)'"></span> 
+              Title can contain only alphanumerical characters
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="form-group">
+          <label class="center-block">Body:</label>
+          <div [ngClass]="{'has-error': (form.controls.body.errors && form.controls.body.dirty), 
+            'has-success': !form.controls.body.errors }">
+            <textarea name="body" class="form-control" rows="8" cols="80" placeholder="*Enter body" formControlName="body">
+              </textarea>
+            <ul class="help-block">
+              <li *ngIf="form.controls.body.errors?.required && form.controls.body.dirty">
+                <span class="glyphicon glyphicon-exclamation-sign" [style.color]="'rgb(245, 68, 68)'"></span> Body is required
+              </li>
+              <li *ngIf="(form.controls.body.errors?.minlength && form.controls.body.dirty) || 
+                  (form.controls.body.errors?.maxlength && form.controls.body.dirty)">
+                <span class="glyphicon glyphicon-exclamation-sign" [style.color]="'rgb(245, 68, 68)'"></span> 
+                Body has to be between 2 and 500 characters long
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <button [disabled]="processing" type="button" name="button" class="btn btn-sm btn-warning" (click)="goBack()">Go Back</button>
+        <button [disabled]="processing || !form.valid" type="submit" name="button" class="btn btn-sm btn-success">Submit</button>
+  
+    </form>
+<!-- ################### all blog posts ################### -->
+  <div *ngIf="!newPost && !loadingBlogs && !searchPerformed">
+    <div class="panel panel-primary" *ngFor="let blog of blogPosts">
+      <div class="panel-heading">
+        <h3 class="panel-title">{{blog.title}}
+          <span [style.float]="'right'" [style.font-size.px]="14" *ngIf="screenService.isLarge()">
+            {{blog.createdAt | date:'medium'}}
+          </span>
+        </h3>
+      </div>
+      <div class="panel-body">{{blog.body}}</div>
+      <div class="panel-footer">
+        <strong>Posted by:</strong> {{blog.createdBy}}
+        <br  *ngIf="!screenService.isLarge()" />
+        <span *ngIf="!screenService.isLarge()"><strong>Date:</strong> {{blog.createdAt | date:'medium'}}</span>
+        <div *ngIf="username === blog.createdBy"> <!-- only user who created this can see this div -->
+          <strong>Likes:</strong> {{blog.likes}}
+          <strong>Dislikes:</strong> {{blog.dislikes}}
+        </div>
+        
+        <a [routerLink]="['/edit-blog/', blog._id ]" *ngIf="username === blog.createdBy"> <!-- only user who created this can see this div -->
+          <button type="button" name="button" class="btn btn-sm btn-info">Edit</button>
+        </a>
+        <a [routerLink]="['/delete-blog/', blog._id ]" *ngIf="username === blog.createdBy"> <!-- only user who created this can see this div -->
+          <button type="button" name="button" class="btn btn-sm btn-danger">Delete</button>
+        </a>
+        <br />
+        <div class="dropdown">
+          <button type="button" name="button" class="btn btn-sm btn-success drop-btn like-disabled" *ngIf="username !== blog.createdBy"
+            (click)="onLike(blog._id)" [disabled]="blog.likedBy.Array.includes(username)"> 
+            <!-- alternative way to check if user already liked: [disabled]="blog.likedBy.Array.indexOf(username) > -1" -->
+            <span class="glyphicon glyphicon-thumbs-up"></span> {{blog.likes}}
+          </button>
+          <div class="dropdown-content">
+            <a [routerLink]="['/user', liker]" *ngFor="let liker of blog.likedBy.Array">{{liker}}</a>
+          </div>
+        </div>
+        <div class="dropdown">
+          <button type="button" name="button" class="btn btn-sm btn-warning drop-btn dislike-disabled" 
+          *ngIf="username !== blog.createdBy" (click)="onDislike(blog._id)" [disabled]="blog.dislikedBy.Array.includes(username)">
+            <span class="glyphicon glyphicon-thumbs-down"></span> {{blog.dislikes}}
+          </button>
+          <div class="dropdown-content">
+            <a [routerLink]="['/user', disliker]" *ngFor="let disliker of blog.dislikedBy.Array">{{disliker}}</a>
+          </div>
+        </div>
+      </div> <!-- footer end -->
+      <!-- comments section -->
+      <div class="panel panel-default" 
+        [style.margin-bottom.px]="0" *ngFor="let comm of blog.comments">
+        <div class="panel panel-body" 
+          [style.margin-bottom.px]="0" *ngIf="enabledIds.includes(blog._id)">
+          <strong>{{comm.commentator}}:</strong> {{comm.comment}}
+          <br />
+          <span [style.font-size.px]="13"><strong>Date:</strong> {{comm.createdAt | date:'medium'}}</span>
+          <br />
+          <button class="btn btn-sm btn-primary" *ngIf="comm.commentator === username" 
+          data-toggle="modal" data-target="#editModal" (click)="getComment(comm._id)">
+            Edit
+          </button>
+          <!-- Edit Modal -->
+          <div id="editModal" class="modal fade" role="dialog">
+              <div class="modal-dialog">
+            
+                <!-- Modal content-->
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Edit Comment</h4>
+                  </div>
+                  <div class="modal-body">
+                      <form #formEditComm="ngForm">
+                          <div class="form-group" [ngClass]="{'has-error': (editCommentBody1.errors && editCommentBody1.dirty),
+                            'has-success': (!editCommentBody1.errors && editCommentBody1.dirty)}">
+                            <textarea class="form-control" rows="2" cols="15" name="editCommentBody" [style.margin-bottom.px]="5"
+                                [(ngModel)]="editCommentBody" #editCommentBody1="ngModel" 
+                                required validateComment>
+                            </textarea>
+                            <ul class="help-block">
+                              <li *ngIf="editCommentBody1.errors?.required && editCommentBody1.dirty">
+                                <span class="glyphicon glyphicon-exclamation-sign"></span> This field is required
+                              </li>
+                              <li *ngIf="editCommentBody1.errors?.validateComment && editCommentBody1.dirty">
+                                <span class="glyphicon glyphicon-exclamation-sign"></span> 
+                                Comment must contain at least one character which is not space,new line,...
+                              </li>
+                            </ul>
+                          </div>
+                          
+                        </form>
+                  </div> <!-- end of modal body --> 
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="submit" id="submit" [disabled]="!formEditComm.valid" class="btn btn-primary"
+                      data-dismiss="modal" (click)="editComment()">Save</button>
+                  </div>
+                </div> <!-- end of modal content --> 
+              </div> <!-- end of modal dialog --> 
+          </div> <!-- end of edit modal --> 
+          <button class="btn btn-sm btn-warning" *ngIf="comm.commentator === username"
+          data-toggle="modal" data-target="#deleteModal" (click)="toDelete=comm._id">
+            Delete
+          </button>
+          <!-- Delete Modal -->
+          <div id="deleteModal" class="modal fade" role="dialog">
+              <div class="modal-dialog">
+            
+                <!-- Modal content-->
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Delete Comment</h4>
+                  </div>
+                  <div class="modal-body">
+                    <p>Are you sure you want to delete this comment?</p>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" 
+                    (click)="deleteComment()">Yes</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+                  </div>
+                </div>
+            
+              </div>
+          </div>
+        </div>
+      </div>
+      <ul [hidden]="editingComments.includes(blog._id)" class="list-group">
+        <li class="list-group-item">
+          <button type="button" name="button" class="btn btn-sm btn-danger"
+          *ngIf="!commentsIds.includes(blog._id)" (click)="commentsIds.push(blog._id)">
+            Post Comment
+          </button>
+          <button type="button" class="btn btn-sm btn-default" (click)="enabledIds.push(blog._id)" 
+            *ngIf="blog.comments.length>0 && !enabledIds.includes(blog._id)" [style.font-weight]="600">
+            Show comments
+          </button>
+          <button type="button" class="btn btn-sm btn-default" (click)="enabledIds.splice(enabledIds.indexOf(blog._id), 1)" 
+            *ngIf="enabledIds.includes(blog._id) && blog.comments.length>0" [style.font-weight]="600"> <!-- blog.comments.length>0 to hide button "Hide Comments" when last comment is deleted by the user -->
+            Hide comments
+          </button>
+          <span *ngIf="id===blog._id">{{id}}</span>
+          <br />
+        </li>
+        <li class="list-group-item" *ngIf="commentsIds.includes(blog._id)">
+          <form #form="ngForm" (ngSubmit)="postComment(blog._id)">
+            <div class="form-group" [ngClass]="{'has-error': (commentBody1.errors && commentBody1.dirty),
+             'has-success': (!commentBody1.errors && commentBody1.dirty)}">
+              <textarea class="form-control" rows="5" cols="15" name="commentBody" [style.margin-bottom.px]="5"
+                placeholder="*Enter Your comment" [(ngModel)]="commentBody" #commentBody1="ngModel" 
+                required validateComment>
+              </textarea>
+              <ul class="help-block">
+                <li *ngIf="commentBody1.errors?.required && commentBody1.dirty">
+                  <span class="glyphicon glyphicon-exclamation-sign"></span> This field is required
+                </li>
+                <li *ngIf="commentBody1.errors?.validateComment && commentBody1.dirty">
+                  <span class="glyphicon glyphicon-exclamation-sign"></span> 
+                  Comment must contain at least one character which is not space,new line,...
+                </li>
+              </ul>
+            </div>
+            <button type="button" class="btn btn-default" (click)="commentsIds.splice(commentsIds.indexOf(blog._id), 1)">
+              Cancel
+            </button>
+            <button [disabled]="!form.valid" type="submit" class="btn btn-primary">Comment!</button>
+          </form>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+<!-- ################   result of search   #########################-->
+  <div *ngIf="!newPost && !loadingBlogs && searchPerformed">
+      <div class="panel panel-primary" *ngFor="let blog of searchedBlogs">
+        <div class="panel-heading">
+          <h3 class="panel-title">{{blog.title}}
+            <span [style.float]="'right'" [style.font-size.px]="14" *ngIf="screenService.isLarge()">
+              {{blog.createdAt | date:'medium'}}
+            </span>
+          </h3>
+        </div>
+        <div class="panel-body">{{blog.body}}</div>
+        <div class="panel-footer">
+          <strong>Posted by:</strong> {{blog.createdBy}}
+          <br  *ngIf="!screenService.isLarge()" />
+          <span *ngIf="!screenService.isLarge()"><strong>Date:</strong> {{blog.createdAt | date:'medium'}}</span>
+          <div *ngIf="username === blog.createdBy"> <!-- only user who created this can see this div -->
+            <strong>Likes:</strong> {{blog.likes}}
+            <strong>Dislikes:</strong> {{blog.dislikes}}
+          </div>
+          
+          <a [routerLink]="['/edit-blog/', blog._id ]" *ngIf="username === blog.createdBy"> <!-- only user who created this can see this div -->
+            <button type="button" name="button" class="btn btn-sm btn-info">Edit</button>
+          </a>
+          <a [routerLink]="['/delete-blog/', blog._id ]" *ngIf="username === blog.createdBy"> <!-- only user who created this can see this div -->
+            <button type="button" name="button" class="btn btn-sm btn-danger">Delete</button>
+          </a>
+          <br />
+          <div class="dropdown">
+            <button type="button" name="button" class="btn btn-sm btn-success drop-btn like-disabled" *ngIf="username !== blog.createdBy"
+              (click)="onLike(blog._id)" [disabled]="blog.likedBy.Array.includes(username)"> 
+              <!-- alternative way to check if user already liked: [disabled]="blog.likedBy.Array.indexOf(username) > -1" -->
+              <span class="glyphicon glyphicon-thumbs-up"></span> {{blog.likes}}
+            </button>
+            <div class="dropdown-content">
+              <a [routerLink]="['/user', liker]" *ngFor="let liker of blog.likedBy.Array">{{liker}}</a>
+            </div>
+          </div>
+          <div class="dropdown">
+            <button type="button" name="button" class="btn btn-sm btn-warning drop-btn dislike-disabled" 
+            *ngIf="username !== blog.createdBy" (click)="onDislike(blog._id)" [disabled]="blog.dislikedBy.Array.includes(username)">
+              <span class="glyphicon glyphicon-thumbs-down"></span> {{blog.dislikes}}
+            </button>
+            <div class="dropdown-content">
+              <a [routerLink]="['/user', disliker]" *ngFor="let disliker of blog.dislikedBy.Array">{{disliker}}</a>
+            </div>
+          </div>
+        </div> <!-- footer end -->
+        <!-- comments section -->
+        <div class="panel panel-default" 
+          [style.margin-bottom.px]="0" *ngFor="let comm of blog.comments">
+          <div class="panel panel-body" 
+            [style.margin-bottom.px]="0" *ngIf="enabledIds.includes(blog._id)">
+            <strong>{{comm.commentator}}:</strong> {{comm.comment}}
+            <br />
+            <span [style.font-size.px]="13"><strong>Date:</strong> {{comm.createdAt | date:'medium'}}</span>
+            <br />
+            <button class="btn btn-sm btn-primary" *ngIf="comm.commentator === username" 
+            data-toggle="modal" data-target="#editModal" (click)="getComment(comm._id)">
+              Edit
+            </button>
+            <!-- Edit Modal -->
+            <div id="editModal" class="modal fade" role="dialog">
+                <div class="modal-dialog">
+              
+                  <!-- Modal content-->
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal">&times;</button>
+                      <h4 class="modal-title">Edit Comment</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form #formEditComm="ngForm">
+                            <div class="form-group" [ngClass]="{'has-error': (editCommentBody1.errors && editCommentBody1.dirty),
+                              'has-success': (!editCommentBody1.errors && editCommentBody1.dirty)}">
+                              <textarea class="form-control" rows="2" cols="15" name="editCommentBody" [style.margin-bottom.px]="5"
+                                  [(ngModel)]="editCommentBody" #editCommentBody1="ngModel" 
+                                  required validateComment>
+                              </textarea>
+                              <ul class="help-block">
+                                <li *ngIf="editCommentBody1.errors?.required && editCommentBody1.dirty">
+                                  <span class="glyphicon glyphicon-exclamation-sign"></span> This field is required
+                                </li>
+                                <li *ngIf="editCommentBody1.errors?.validateComment && editCommentBody1.dirty">
+                                  <span class="glyphicon glyphicon-exclamation-sign"></span> 
+                                  Comment must contain at least one character which is not space,new line,...
+                                </li>
+                              </ul>
+                            </div>
+                            
+                          </form>
+                    </div> <!-- end of modal body --> 
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                      <button type="submit" id="submit" [disabled]="!formEditComm.valid" class="btn btn-primary"
+                        data-dismiss="modal" (click)="editComment()">Save</button>
+                    </div>
+                  </div> <!-- end of modal content --> 
+                </div> <!-- end of modal dialog --> 
+            </div> <!-- end of edit modal --> 
+            <button class="btn btn-sm btn-warning" *ngIf="comm.commentator === username"
+            data-toggle="modal" data-target="#deleteModal" (click)="toDelete=comm._id">
+              Delete
+            </button>
+            <!-- Delete Modal -->
+            <div id="deleteModal" class="modal fade" role="dialog">
+                <div class="modal-dialog">
+              
+                  <!-- Modal content-->
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal">&times;</button>
+                      <h4 class="modal-title">Delete Comment</h4>
+                    </div>
+                    <div class="modal-body">
+                      <p>Are you sure you want to delete this comment?</p>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-primary" data-dismiss="modal" 
+                      (click)="deleteComment()">Yes</button>
+                      <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+                    </div>
+                  </div>
+              
+                </div>
+            </div>
+          </div>
+        </div>
+        <ul [hidden]="editingComments.includes(blog._id)" class="list-group">
+          <li class="list-group-item">
+            <button type="button" name="button" class="btn btn-sm btn-danger"
+            *ngIf="!commentsIds.includes(blog._id)" (click)="commentsIds.push(blog._id)">
+              Post Comment
+            </button>
+            <button type="button" class="btn btn-sm btn-default" (click)="enabledIds.push(blog._id)" 
+              *ngIf="blog.comments.length>0 && !enabledIds.includes(blog._id)" [style.font-weight]="600">
+              Show comments
+            </button>
+            <button type="button" class="btn btn-sm btn-default" (click)="enabledIds.splice(enabledIds.indexOf(blog._id), 1)" 
+              *ngIf="enabledIds.includes(blog._id) && blog.comments.length>0" [style.font-weight]="600"> <!-- blog.comments.length>0 to hide button "Hide Comments" when last comment is deleted by the user -->
+              Hide comments
+            </button>
+            <span *ngIf="id===blog._id">{{id}}</span>
+            <br />
+          </li>
+          <li class="list-group-item" *ngIf="commentsIds.includes(blog._id)">
+            <form #form="ngForm" (ngSubmit)="postComment(blog._id)">
+              <div class="form-group" [ngClass]="{'has-error': (commentBody1.errors && commentBody1.dirty),
+               'has-success': (!commentBody1.errors && commentBody1.dirty)}">
+                <textarea class="form-control" rows="5" cols="15" name="commentBody" [style.margin-bottom.px]="5"
+                  placeholder="*Enter Your comment" [(ngModel)]="commentBody" #commentBody1="ngModel" 
+                  required validateComment>
+                </textarea>
+                <ul class="help-block">
+                  <li *ngIf="commentBody1.errors?.required && commentBody1.dirty">
+                    <span class="glyphicon glyphicon-exclamation-sign"></span> This field is required
+                  </li>
+                  <li *ngIf="commentBody1.errors?.validateComment && commentBody1.dirty">
+                    <span class="glyphicon glyphicon-exclamation-sign"></span> 
+                    Comment must contain at least one character which is not space,new line,...
+                  </li>
+                </ul>
+              </div>
+              <button type="button" class="btn btn-default" (click)="commentsIds.splice(commentsIds.indexOf(blog._id), 1)">
+                Cancel
+              </button>
+              <button [disabled]="!form.valid" type="submit" class="btn btn-primary">Comment!</button>
+            </form>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <!-- if no blogs were found -->
+    <div *ngIf="searchPerformed && searchedBlogs==''" [style.text-align]="'center'" [style.margin-top.px]="20"> 
+      Your search returned no matches.
+    </div>
+<!-- $$$$$$$$$$$$$$$$$$$$$$$   end of search results    $$$$$$$$$$$$$$$$$$$$$$$$$-->
+
+  <div *ngIf="loadingBlogs">
+      Getting All Blog Posts...
+  </div>
+</div>

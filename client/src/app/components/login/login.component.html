@@ -1,0 +1,60 @@
+<div *ngIf="errorMsg" class="error-message">
+    {{errorMsg}}
+  </div>
+  
+  <div *ngIf="!submitted" class="form">
+    <span class="heading-text"><h1 [style.font-weight]="600">Login</h1></span>
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+  
+      <div class="form-group"> 
+        <label class="center-block">Username:</label>
+        <div [ngClass]="{'has-error': (form.controls.username.errors && form.controls.username.dirty) , 
+        'has-success': !form.controls.username.errors && form.controls.username.dirty}">
+          <input class="form-control" placeholder="*Enter username" name="username" formControlName="username">
+          <ul class="help-block">
+            <li *ngIf="form.controls.username.errors?.required && form.controls.username.dirty">
+              <span class="glyphicon glyphicon-remove" [style.color]="'rgb(245, 68, 68)'"></span> Username is required
+            </li>
+            <li *ngIf="(form.controls.username.errors?.minlength || form.controls.username.errors?.maxlength) 
+              && form.controls.username.dirty">
+              <span class="glyphicon glyphicon-remove" [style.color]="'rgb(245, 68, 68)'"></span> 
+              Username must be between 5 and 30 characters long
+            </li>
+            <li *ngIf="form.controls.username.errors?.validateUsername && form.controls.username.dirty 
+                      && !form.controls.username.errors?.required">
+              <span class="glyphicon glyphicon-remove" [style.color]="'rgb(245, 68, 68)'"></span> 
+              Username can't contain special characters
+            </li>
+          </ul>
+        </div>
+      </div>
+  
+      <div class="form-group">
+        <label class="center-block">Password:</label>
+        <div [ngClass]="{'has-error': (form.controls.password.errors && form.controls.password.dirty), 
+        'has-success': !form.controls.password.errors && form.controls.password.dirty}">
+          <input class="form-control" placeholder="*Enter password" name="password" formControlName="password">
+          <ul class="help-block">
+            <li *ngIf="form.controls.password.errors?.required && form.controls.password.dirty">
+              <span class="glyphicon glyphicon-exclamation-sign" [style.color]="'rgb(245, 68, 68)'"></span> Password is required
+            </li>
+            <li *ngIf="(form.controls.password.errors?.minlength || form.controls.password.errors?.maxlength) 
+                && form.controls.password.dirty">
+              <span class="glyphicon glyphicon-exclamation-sign" [style.color]="'rgb(245, 68, 68)'"></span> 
+              Password must be at least 8, but not more than 30 characters long
+            </li>
+          </ul>
+        </div>
+      </div>
+  
+      <div class="submit-btn">
+        <input [disabled]="!form.valid || submitted" 
+          type="submit" class="btn btn-success" value="Log in">
+      </div>
+      
+    </form>
+  </div>
+  
+  <div *ngIf="submitted" class="loggingIn">
+    <span style="color:white;">Just a few seconds, please...</span>
+  </div>

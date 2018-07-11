@@ -1,0 +1,106 @@
+.table > tbody > tr > td { 
+    padding-top: 1px;
+    padding-bottom: 1px;
+    font-size: 13px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.table > thead > tr > th {
+    text-align: center;
+    font-size: 13.5px;
+}
+
+#meal-calculaton-table {
+    background-color: #f5f5f5;
+}
+
+#meal-calculaton-table > td {
+    text-align: left;
+}
+
+#row-total {
+    background-color: #673ab7;
+    color: #ffffff;
+}
+
+.loading-meals {
+    min-height: 200px;
+    min-width: 100%;
+    display: flex;
+}
+
+.loading-content {
+    margin: auto;
+}
+
+#edit-cell {
+    background-color: #673ab7; 
+    color:#ffffff; 
+    display: flex; 
+    padding: 0 0 0 0;
+    height: 36.8px; 
+    line-height: 36.8px;
+}
+
+#edit-cell .edit-span {
+    background-color:rgb(241, 243, 243); 
+    min-height: 100%; 
+    min-width: 36.8px;
+    color: black;
+}
+
+#edit-cell .edit-span i {
+    vertical-align: middle; 
+}
+
+#edit-cell > .edit-span:hover{
+    background-color: black;
+    color: rgb(241, 243, 243);
+    cursor: pointer;
+}
+
+.calories-ok {
+    background-color: rgb(9, 161, 9);
+    color: white;
+}
+
+.calories-bad {
+    background-color: red;
+    color: white;
+}
+
+#summary {
+    text-align: left;
+}
+
+.fixed-size-container {
+    max-width: 940px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.fixed-size {
+    width: 120px;
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+    margin-bottom: 10px;
+    background-color: #e6e6e6;
+}
+
+.fixed-size:hover {
+    cursor: pointer;
+    color: white;
+    background-color: black;
+}
+
+.text-missing {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 20px 0 20px 0;
+    text-align: center;
+}
